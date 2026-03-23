@@ -22,8 +22,12 @@ export default async function PortfolioPage() {
         {portfolio.map((item: any) => (
           <div key={item.id} className="bg-white rounded-xl shadow-md overflow-hidden">
             {item.image_url && (
-              <div className="h-48 bg-gray-200 flex items-center justify-center">
-                <span className="text-gray-400">Image</span>
+              <div className="h-48 bg-gray-200 overflow-hidden">
+                <img
+                  src={item.image_url}
+                  alt={item.title}
+                  className="w-full h-full object-cover"
+                />
               </div>
             )}
             <div className="p-4">
