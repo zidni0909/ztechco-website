@@ -25,10 +25,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid email address' }, { status: 400 });
     }
 
-    await db.query(
-      'INSERT INTO contact_messages (name, email, phone, subject, message) VALUES (?, ?, ?, ?, ?)',
-      [name, email, phone || '', subject || '', message]
-    );
+    try {
+      await db.query(
+        'INSERT INTO contact_messages (name, email, phone, subject, message) VALUES (?, ?, ?, ?, ?)',
+        [name, email, phone || '', subject || '', message]
+      );
+    } catch (error: any) {
+      // Backward compatibility for older schema without `phone`
+      if (error?.code === 'ER_BAD_FIELD_ERROR' || String(error?.message || '').includes('Unknown column')) {
+        await db.query(
+          'INSERT INTO contact_messages (name, email, subject, message) VALUES (?, ?, ?, ?)',
+          [name, email, subject || '', message]
+        );
+      } else {
+        throw error;
+      }
+    }
 
     return NextResponse.json({ success: true, message: 'Message sent successfully' });
   } catch (error) {
