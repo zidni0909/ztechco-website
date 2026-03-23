@@ -19,10 +19,24 @@ export async function GET(request: NextRequest) {
 
       const offset = (page - 1) * limit;
 
-      const [files] = await db.query<RowDataPacket[]>(
-        'SELECT id, filename, file_path, file_size, mime_type, uploaded_by, created_at FROM media_files ORDER BY created_at DESC LIMIT ? OFFSET ?',
-        [limit, offset]
-      );
+      let files: RowDataPacket[] = [];
+      try {
+        const [rows] = await db.query<RowDataPacket[]>(
+          'SELECT id, filename, file_path, file_size, mime_type, uploaded_by, created_at FROM media_files ORDER BY created_at DESC LIMIT ? OFFSET ?',
+          [limit, offset]
+        );
+        files = rows;
+      } catch (error: any) {
+        if (error?.code === 'ER_BAD_FIELD_ERROR' || String(error?.message || '').includes('Unknown column')) {
+          const [rows] = await db.query<RowDataPacket[]>(
+            'SELECT id, filename, file_path, file_size, file_type AS mime_type, uploaded_by, created_at FROM media_files ORDER BY created_at DESC LIMIT ? OFFSET ?',
+            [limit, offset]
+          );
+          files = rows;
+        } else {
+          throw error;
+        }
+      }
 
       const [countResult] = await db.query<RowDataPacket[]>(
         'SELECT COUNT(*) as total FROM media_files'
@@ -81,11 +95,22 @@ export async function POST(request: NextRequest) {
       const bytes = await file.arrayBuffer();
       await writeFile(filepath, Buffer.from(bytes));
 
-      // Store in database
-      await db.query(
-        'INSERT INTO media_files (filename, original_name, file_path, file_size, mime_type, uploaded_by, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())',
-        [filename, file.name, publicPath, file.size, file.type, 1]
-      );
+      // Store in database (support old/new schema variants)
+      try {
+        await db.query(
+          'INSERT INTO media_files (filename, original_name, file_path, file_size, mime_type, uploaded_by, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())',
+          [filename, file.name, publicPath, file.size, file.type, 1]
+        );
+      } catch (error: any) {
+        if (error?.code === 'ER_BAD_FIELD_ERROR' || String(error?.message || '').includes('Unknown column')) {
+          await db.query(
+            'INSERT INTO media_files (filename, original_filename, file_path, file_size, file_type, uploaded_by, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())',
+            [filename, file.name, publicPath, file.size, file.type, 1]
+          );
+        } else {
+          throw error;
+        }
+      }
 
       return NextResponse.json(
         { success: true, filename, path: publicPath },

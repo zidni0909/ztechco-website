@@ -101,11 +101,6 @@ export default function EditSchedulePage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Judul</label>
-              <input name="title" value={form.title} onChange={handleChange} className="w-full px-3 py-2 border rounded" />
-            </div>
-
-            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Publish At</label>
               <input name="publish_at" type="datetime-local" value={form.publish_at} onChange={handleChange} className="w-full px-3 py-2 border rounded" />
             </div>
