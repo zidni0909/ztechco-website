@@ -11,13 +11,13 @@ export async function POST(request: NextRequest) {
       const body = await request.json();
       const { title, content_type, content_id, publish_at, meta } = body;
 
-      if (!title || !content_type || !publish_at) {
+      if (!content_type || !publish_at) {
         return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
       }
 
       const [result] = await db.query(
-        'INSERT INTO content_schedule (title, content_type, content_id, publish_at, meta, status, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())',
-        [title, content_type, content_id || null, publish_at, JSON.stringify(meta || {}), 'scheduled']
+        'INSERT INTO content_schedule (content_type, content_id, scheduled_time, action, status, created_at) VALUES (?, ?, ?, ?, ?, NOW())',
+        [content_type, content_id || null, publish_at, 'publish', 'scheduled']
       );
 
       // @ts-ignore
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
       const search = searchParams.get('search');
 
       const offset = (page - 1) * limit;
-      let query = 'SELECT * FROM content_schedule WHERE 1=1';
+      let query = "SELECT id, content_type, content_id, scheduled_time AS publish_at, status, CONCAT(content_type, '#', content_id) AS title FROM content_schedule WHERE 1=1";
       const params: any[] = [];
 
       if (status) {
@@ -53,11 +53,11 @@ export async function GET(request: NextRequest) {
         params.push(content_type);
       }
       if (search) {
-        query += ' AND title LIKE ?';
-        params.push(`%${search}%`);
+        query += ' AND (content_type LIKE ? OR CAST(content_id AS CHAR) LIKE ?)';
+        params.push(`%${search}%`, `%${search}%`);
       }
 
-      query += ' ORDER BY publish_at DESC LIMIT ? OFFSET ?';
+      query += ' ORDER BY scheduled_time DESC LIMIT ? OFFSET ?';
       params.push(limit, offset);
 
       const [schedules] = await db.query<RowDataPacket[]>(query, params);

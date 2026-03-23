@@ -20,9 +20,9 @@ export async function GET(request: NextRequest) {
       const params: any[] = [];
 
       if (search) {
-        query += ' AND (client_name LIKE ? OR testimonial LIKE ?)';
+        query += ' AND (name LIKE ? OR content LIKE ? OR company LIKE ?)';
         const searchTerm = `%${search}%`;
-        params.push(searchTerm, searchTerm);
+        params.push(searchTerm, searchTerm, searchTerm);
       }
 
       query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
@@ -33,9 +33,9 @@ export async function GET(request: NextRequest) {
       let countQuery = 'SELECT COUNT(*) as total FROM testimonials WHERE 1=1';
       const countParams: any[] = [];
       if (search) {
-        countQuery += ' AND (client_name LIKE ? OR testimonial LIKE ?)';
+        countQuery += ' AND (name LIKE ? OR content LIKE ? OR company LIKE ?)';
         const searchTerm = `%${search}%`;
-        countParams.push(searchTerm, searchTerm);
+        countParams.push(searchTerm, searchTerm, searchTerm);
       }
       
       const [countResult] = await db.query<RowDataPacket[]>(countQuery, countParams);
@@ -68,8 +68,8 @@ export async function POST(request: NextRequest) {
       }
 
       await db.query(
-        'INSERT INTO testimonials (client_name, client_company, client_position, testimonial, rating, image_url, is_published) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [client_name, client_company || '', client_position || '', testimonial, rating || 5, image_url || '', is_published || false]
+        'INSERT INTO testimonials (name, company, position, content, avatar_url, rating, is_published) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [client_name, client_company || '', client_position || '', testimonial, image_url || '', rating || 5, is_published || false]
       );
 
       return NextResponse.json({ success: true });

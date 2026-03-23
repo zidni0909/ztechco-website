@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
         }
       };
 
-      const [users] = await db.query<RowDataPacket[]>('SELECT COUNT(*) as total FROM users');
+      const users = await safe('users');
       const blogs = await safe('blog_posts');
       const portfolio = await safe('portfolio');
       const services = await safe('services');
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({
         stats: {
-          users: (users as RowDataPacket[])[0]?.total || 0,
+          users,
           blogs,
           portfolio,
           services,
