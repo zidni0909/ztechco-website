@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic';
 
+import { revalidatePath } from 'next/cache';
 import { NextResponse, NextRequest } from 'next/server';
 import db from '@/lib/db';
 import { handleError } from '@/lib/utils/errors';
@@ -64,7 +65,15 @@ export async function PUT(request: NextRequest) {
         );
       }
 
-      return NextResponse.json({ success: true });
+      revalidatePath('/');
+      revalidatePath('/about');
+      revalidatePath('/services');
+      revalidatePath('/portfolio');
+      revalidatePath('/blog');
+      revalidatePath('/contact');
+      revalidatePath('/admin/website-editor');
+
+      return NextResponse.json({ success: true, revalidated: true });
     } catch (error) {
       const { message, statusCode } = handleError(error);
       return NextResponse.json({ error: message }, { status: statusCode });
