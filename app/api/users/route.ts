@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
   return authProtectedEndpoint(request, async () => {
     try {
       const body = await request.json();
-      const { email, password, role = 'user' } = body;
+      const { email, password, role = 'editor' } = body;
 
       if (!email || !password) {
         return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });

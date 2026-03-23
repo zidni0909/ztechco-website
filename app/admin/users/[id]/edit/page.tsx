@@ -24,16 +24,16 @@ export default function EditUserPage() {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'user',
+    role: 'editor',
     is_active: true,
   });
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await fetch(`/api/users?search=${userId}`);
+        const response = await fetch('/api/users');
         const data = await response.json();
-        const user = data.users?.[0];
+        const user = data.users?.find((u: any) => String(u.id) === String(userId));
         if (user) {
           setFormData(prev => ({
             ...prev,
@@ -205,7 +205,6 @@ export default function EditUserPage() {
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
               >
-                <option value="user">User</option>
                 <option value="editor">Editor</option>
                 <option value="admin">Admin</option>
               </select>

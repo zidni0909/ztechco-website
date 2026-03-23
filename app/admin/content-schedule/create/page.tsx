@@ -25,8 +25,8 @@ export default function CreateSchedulePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!form.title || !form.publish_at) {
-      setError('Title dan Publish date wajib diisi');
+    if (!form.publish_at) {
+      setError('Publish date wajib diisi');
       return;
     }
 

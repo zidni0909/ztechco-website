@@ -74,8 +74,8 @@ export async function GET(request: NextRequest) {
         countParams.push(content_type);
       }
       if (search) {
-        countQuery += ' AND title LIKE ?';
-        countParams.push(`%${search}%`);
+        countQuery += ' AND (content_type LIKE ? OR CAST(content_id AS CHAR) LIKE ?)';
+        countParams.push(`%${search}%`, `%${search}%`);
       }
 
       const [countResult] = await db.query<RowDataPacket[]>(countQuery, countParams);

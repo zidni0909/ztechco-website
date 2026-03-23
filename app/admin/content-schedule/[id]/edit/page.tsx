@@ -36,7 +36,7 @@ export default function EditSchedulePage() {
             content_id: s.content_id ? String(s.content_id) : '',
             publish_at: s.publish_at ? new Date(s.publish_at).toISOString().slice(0,16) : '',
             status: s.status || 'scheduled',
-            meta: s.meta ? JSON.stringify(JSON.parse(s.meta), null, 2) : '',
+            meta: '',
           });
         }
       } catch (err) {
@@ -60,10 +60,8 @@ export default function EditSchedulePage() {
     try {
       setSaving(true);
       const body = {
-        title: form.title,
         publish_at: form.publish_at,
         status: form.status,
-        meta: form.meta ? JSON.parse(form.meta) : undefined,
       };
 
       const res = await fetch(`/api/content-schedule/${id}`, {

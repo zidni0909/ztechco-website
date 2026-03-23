@@ -27,21 +27,13 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       const fields: string[] = [];
       const values: any[] = [];
 
-      if (title !== undefined) {
-        fields.push('title = ?');
-        values.push(title);
-      }
       if (publish_at !== undefined) {
-        fields.push('publish_at = ?');
+        fields.push('scheduled_time = ?');
         values.push(publish_at);
       }
       if (status !== undefined) {
         fields.push('status = ?');
         values.push(status);
-      }
-      if (meta !== undefined) {
-        fields.push('meta = ?');
-        values.push(JSON.stringify(meta || {}));
       }
 
       if (fields.length === 0) {

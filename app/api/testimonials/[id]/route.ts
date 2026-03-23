@@ -21,8 +21,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       }
 
       await db.query(
-        'UPDATE testimonials SET client_name = ?, client_company = ?, client_position = ?, testimonial = ?, rating = ?, image_url = ?, is_published = ? WHERE id = ?',
-        [client_name, client_company || '', client_position || '', testimonial, rating || 5, image_url || '', is_published || false, params.id]
+        'UPDATE testimonials SET name = ?, company = ?, position = ?, content = ?, avatar_url = ?, rating = ?, is_published = ? WHERE id = ?',
+        [client_name, client_company || '', client_position || '', testimonial, image_url || '', rating || 5, is_published || false, params.id]
       );
 
       return NextResponse.json({ success: true });
