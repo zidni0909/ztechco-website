@@ -4,11 +4,8 @@ import { NextResponse, NextRequest } from 'next/server';
 import db from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
 import { authProtectedEndpoint } from '@/lib/api-auth';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import { existsSync } from 'fs';
-
-const UPLOAD_DIR = join(process.cwd(), 'public', 'uploads');
+import { writeFile } from 'fs/promises';
+import { buildUploadPublicPath, ensureUploadDir, resolveUploadFilePath } from '@/lib/uploads';
 
 export async function GET(request: NextRequest) {
   return authProtectedEndpoint(request, async () => {
@@ -79,17 +76,15 @@ export async function POST(request: NextRequest) {
       }
 
       // Create upload directory if it doesn't exist
-      if (!existsSync(UPLOAD_DIR)) {
-        await mkdir(UPLOAD_DIR, { recursive: true });
-      }
+      await ensureUploadDir();
 
       // Generate unique filename
       const timestamp = Date.now();
       const random = Math.random().toString(36).substring(7);
       const ext = file.name.split('.').pop();
       const filename = `${timestamp}-${random}.${ext}`;
-      const filepath = join(UPLOAD_DIR, filename);
-      const publicPath = `/uploads/${filename}`;
+      const filepath = resolveUploadFilePath(filename);
+      const publicPath = buildUploadPublicPath(filename);
 
       // Save file
       const bytes = await file.arrayBuffer();

@@ -4,7 +4,7 @@ import { NextResponse, NextRequest } from 'next/server';
 import db from '@/lib/db';
 import { authProtectedEndpoint } from '@/lib/api-auth';
 import { unlink } from 'fs/promises';
-import { join } from 'path';
+import { resolveLegacyUploadFilePath, resolveUploadFilePath } from '@/lib/uploads';
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   return authProtectedEndpoint(request, async () => {
@@ -26,12 +26,19 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
       // Delete physical file if it exists
       if (file.file_path) {
-        try {
-          const filePath = join(process.cwd(), 'public', file.file_path.replace(/^\//, ''));
-          await unlink(filePath);
-        } catch (err) {
-          console.error('Error deleting physical file:', err);
-          // Continue anyway, file is deleted from DB
+        const filename = String(file.file_path).split('/').pop();
+        const candidates = filename
+          ? [resolveUploadFilePath(filename), resolveLegacyUploadFilePath(filename)]
+          : [];
+
+        for (const filePath of candidates) {
+          try {
+            await unlink(filePath);
+          } catch (err: any) {
+            if (err?.code !== 'ENOENT') {
+              console.error('Error deleting physical file:', err);
+            }
+          }
         }
       }
 
