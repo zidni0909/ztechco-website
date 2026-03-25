@@ -1,0 +1,17 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      UPLOAD_DIR: /app/storage/uploads
+    volumes:
+      - ztechco_uploads:/app/storage/uploads
+    ports:
+      - "3000:3000"
+
+volumes:
+  ztechco_uploads:
