@@ -14,6 +14,8 @@ const inter = Inter({
 
 const SITE_URL = 'https://ztechco.my.id';
 
+export const dynamic = 'force-dynamic';
+
 async function getSettings(): Promise<Record<string, string>> {
   try {
     const [rows] = await db.query<RowDataPacket[]>('SELECT `key`, `value` FROM settings');
